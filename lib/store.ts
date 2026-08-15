@@ -60,7 +60,7 @@ export async function getTrendingDances() {
     join dances d on d.id = c.dance_id
     where d.status = 'approved'
     order by c.view_count desc
-    limit 5`
+    limit 10`
   );
 
   return rows.map((row) => ({ ...mapDance(row), view_count: row.view_count }));

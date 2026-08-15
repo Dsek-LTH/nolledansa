@@ -21,7 +21,7 @@ export default function TrendingSection({ dances }: TrendingSectionProps) {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-          {dances.slice(0, 5).map((dance) => (
+          {dances.slice(0, 10).map((dance) => (
             <DanceCard key={dance.id} dance={dance} showTrending />
           ))}
         </div>
