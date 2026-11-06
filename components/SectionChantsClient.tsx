@@ -114,7 +114,7 @@ export default function SectionChantsClient({ initialChants }: SectionChantsClie
     <div className="flex flex-col gap-8">
       <section className="order-2 bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-5">
-          <Plus className="w-5 h-5 text-purple-600" />
+          <Plus className="w-5 h-5 text-brand-600" />
           <h1 className="text-2xl font-bold text-gray-900">Ladda upp ramsa</h1>
         </div>
 
@@ -125,7 +125,7 @@ export default function SectionChantsClient({ initialChants }: SectionChantsClie
               <select
                 value={section}
                 onChange={(event) => setSection(event.target.value as Section)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                 disabled={loading}
               >
                 {SECTIONS.map((sectionName) => (
@@ -143,7 +143,7 @@ export default function SectionChantsClient({ initialChants }: SectionChantsClie
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 placeholder="t.ex. Störst och bäst i Skåne"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                 disabled={loading}
               />
             </div>
@@ -156,7 +156,7 @@ export default function SectionChantsClient({ initialChants }: SectionChantsClie
                 value={melody}
                 onChange={(event) => setMelody(event.target.value)}
                 placeholder="t.ex. Melodi: Hej tomtegubbar"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                 disabled={loading}
               />
           </div>
@@ -168,7 +168,7 @@ export default function SectionChantsClient({ initialChants }: SectionChantsClie
               onChange={(event) => setLyrics(event.target.value)}
               placeholder="Skriv hela ramsan här..."
               rows={5}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 resize-y"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-y"
               disabled={loading}
             />
           </div>
@@ -189,7 +189,7 @@ export default function SectionChantsClient({ initialChants }: SectionChantsClie
           <button
             type="submit"
             disabled={loading}
-            className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white font-medium px-5 py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+            className="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 disabled:opacity-60 text-white font-medium px-5 py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
           >
             {loading ? (
               <>

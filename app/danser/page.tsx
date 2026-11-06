@@ -20,6 +20,7 @@ const SORT_OPTIONS = [
   { value: "section", label: "Sektion" },
   { value: "newest", label: "Nya först" },
   { value: "oldest", label: "Äldst först" },
+  { value: "popular", label: "Populärast" },
 ] as const;
 
 type DanceSort = (typeof SORT_OPTIONS)[number]["value"];
@@ -98,7 +99,7 @@ export default async function DancesPage({ searchParams }: DancesPageProps) {
         {hasFilters && (
           <Link
             href="/danser"
-            className="hidden sm:inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-purple-700 transition-colors"
+            className="hidden sm:inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-brand-700 transition-colors"
           >
             <X className="w-4 h-4" />
             Rensa
@@ -108,7 +109,7 @@ export default async function DancesPage({ searchParams }: DancesPageProps) {
 
       <form className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
-          <Filter className="w-4 h-4 text-purple-600" />
+          <Filter className="w-4 h-4 text-brand-600" />
           <h2 className="text-sm font-semibold text-gray-900">Filter</h2>
         </div>
 
@@ -126,7 +127,7 @@ export default async function DancesPage({ searchParams }: DancesPageProps) {
                     name="section"
                     value={section}
                     defaultChecked={selectedSections.includes(section)}
-                    className="w-4 h-4 accent-purple-600"
+                    className="w-4 h-4 accent-brand-600"
                   />
                   {section}
                 </label>
@@ -147,7 +148,7 @@ export default async function DancesPage({ searchParams }: DancesPageProps) {
                     name="year"
                     value={year}
                     defaultChecked={selectedYears.includes(year)}
-                    className="w-4 h-4 accent-purple-600"
+                    className="w-4 h-4 accent-brand-600"
                   />
                   {year}
                 </label>
@@ -168,7 +169,7 @@ export default async function DancesPage({ searchParams }: DancesPageProps) {
                     name="organization"
                     value={organization}
                     defaultChecked={selectedOrganizations.includes(organization)}
-                    className="w-4 h-4 accent-purple-600"
+                    className="w-4 h-4 accent-brand-600"
                   />
                   {organization}
                 </label>
@@ -192,7 +193,7 @@ export default async function DancesPage({ searchParams }: DancesPageProps) {
                     name="sort"
                     value={option.value}
                     defaultChecked={selectedSort === option.value}
-                    className="w-4 h-4 accent-purple-600"
+                    className="w-4 h-4 accent-brand-600"
                   />
                   {option.label}
                 </label>
@@ -203,7 +204,7 @@ export default async function DancesPage({ searchParams }: DancesPageProps) {
           <div className="flex items-end gap-2">
             <button
               type="submit"
-              className="w-full lg:w-auto bg-purple-600 hover:bg-purple-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors"
+              className="w-full lg:w-auto bg-brand-600 hover:bg-brand-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors"
             >
               Filtrera
             </button>
@@ -236,7 +237,11 @@ export default async function DancesPage({ searchParams }: DancesPageProps) {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {dances.map((dance) => (
-              <DanceCard key={dance.id} dance={dance} />
+              <DanceCard
+                key={dance.id}
+                dance={dance}
+                showTrending={selectedSort === "popular"}
+              />
             ))}
           </div>
         )}

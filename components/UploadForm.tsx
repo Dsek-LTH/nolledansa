@@ -5,7 +5,9 @@ import Link from "next/link";
 import { Upload, Loader2, CheckCircle } from "lucide-react";
 import { DanceFormData, DanceOrganization, SegmentFormData, Section } from "@/lib/types";
 import { parseTime } from "@/lib/utils";
+import { DANCE_YEAR_ERROR, normalizeDanceYear } from "@/lib/dance-year";
 import { compressVideo, CompressionProgress } from "@/lib/compress-video";
+import { VIDEO_COMPRESSION_ENABLED } from "@/lib/upload-config";
 import SegmentForm from "./SegmentForm";
 
 const SECTIONS: Section[] = ["A", "D", "E", "F", "I", "ING", "K", "M", "V", "W"];
@@ -153,6 +155,7 @@ export default function UploadForm() {
     if (!form.title.trim()) return "Dansnamn krävs";
     if (!form.dancer_names.trim()) return "Vilka dansar krävs";
     if (!form.year.trim()) return "År krävs";
+    if (normalizeDanceYear(form.year) === null) return DANCE_YEAR_ERROR;
     if (!videoFile) return "Välj en videofil";
     for (let i = 0; i < segments.length; i++) {
       const s = segments[i];
@@ -194,26 +197,28 @@ export default function UploadForm() {
         }
       };
 
-      try {
-        fileToUpload = await compressVideo(
-          videoFile!,
-          handleCompressionProgress,
-          LIGHT_COMPRESSION_THRESHOLD_MB
-        );
-      } catch (compressionErr) {
-        console.warn("Komprimering misslyckades:", compressionErr);
-        throw new Error(
-          "Komprimeringen misslyckades. Prova igen eller exportera videon med lägre bitrate/upplösning."
-        );
-      }
+      if (VIDEO_COMPRESSION_ENABLED) {
+        try {
+          fileToUpload = await compressVideo(
+            videoFile!,
+            handleCompressionProgress,
+            LIGHT_COMPRESSION_THRESHOLD_MB
+          );
+        } catch (compressionErr) {
+          console.warn("Komprimering misslyckades:", compressionErr);
+          throw new Error(
+            "Komprimeringen misslyckades. Prova igen eller exportera videon med lägre bitrate/upplösning."
+          );
+        }
 
-      // Sanity-check final file size
-      const finalMB = fileToUpload.size / 1024 / 1024;
-      if (finalMB > MAX_UPLOAD_MB) {
-        throw new Error(
-          `Filen är ${finalMB.toFixed(0)} MB efter komprimering, vilket överstiger ` +
-          `gränsen på ${MAX_UPLOAD_MB} MB. Försök med en kortare video.`
-        );
+        // Sanity-check final file size
+        const finalMB = fileToUpload.size / 1024 / 1024;
+        if (finalMB > MAX_UPLOAD_MB) {
+          throw new Error(
+            `Filen är ${finalMB.toFixed(0)} MB efter komprimering, vilket överstiger ` +
+            `gränsen på ${MAX_UPLOAD_MB} MB. Försök med en kortare video.`
+          );
+        }
       }
 
       // ── 2. Ladda upp video till objektlagring ─────────────────────────────
@@ -251,7 +256,7 @@ export default function UploadForm() {
           title: form.title.trim(),
           section: form.section,
           organization: form.organization,
-          year: form.year.trim(),
+          year: normalizeDanceYear(form.year),
           songTitle: form.title.trim(),
           dancerNames: form.dancer_names.trim(),
           artist: form.artist.trim() || null,
@@ -300,7 +305,7 @@ export default function UploadForm() {
         <div className="flex justify-center gap-3 pt-2">
           <Link
             href="/"
-            className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+            className="bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
           >
             Till startsidan
           </Link>
@@ -340,8 +345,8 @@ export default function UploadForm() {
               : "cursor-pointer"
           } ${
             videoFile
-              ? "border-purple-400 bg-purple-50"
-              : "border-gray-300 hover:border-purple-400"
+              ? "border-brand-400 bg-brand-50"
+              : "border-gray-300 hover:border-brand-400"
           }`}
         >
           <input
@@ -354,7 +359,7 @@ export default function UploadForm() {
           />
           {videoFile ? (
             <div className="space-y-1">
-              <p className="text-sm font-medium text-purple-700">{videoFile.name}</p>
+              <p className="text-sm font-medium text-brand-700">{videoFile.name}</p>
               <p className="text-xs text-gray-500">
                 {(videoFile.size / 1024 / 1024).toFixed(1)} MB
                 {videoDuration !== undefined &&
@@ -363,7 +368,9 @@ export default function UploadForm() {
                   ).padStart(2, "0")}`}
               </p>
               <p className="text-xs text-gray-400">
-                Alla videostorlekar kan väljas här. Videon komprimeras före uppladdning till max {MAX_UPLOAD_MB} MB.
+                {VIDEO_COMPRESSION_ENABLED
+                  ? `Videon komprimeras före uppladdning till max ${MAX_UPLOAD_MB} MB.`
+                  : "Videon laddas upp i originalstorlek utan komprimering."}
               </p>
             </div>
           ) : (
@@ -371,7 +378,9 @@ export default function UploadForm() {
               <Upload className="mx-auto w-8 h-8 text-gray-400" />
               <p className="text-sm text-gray-600">Klicka för att välja videofil</p>
               <p className="text-xs text-gray-400">
-                MP4, MOV, WebM, etc. · Komprimeras automatiskt till max {MAX_UPLOAD_MB} MB före uppladdning
+                {VIDEO_COMPRESSION_ENABLED
+                  ? `MP4, MOV, WebM, etc. · Komprimeras automatiskt till max ${MAX_UPLOAD_MB} MB före uppladdning`
+                  : "MP4, MOV, WebM, etc. · Laddas upp utan komprimering"}
               </p>
             </div>
           )}
@@ -435,7 +444,7 @@ export default function UploadForm() {
                 <button
                   type="button"
                   onClick={captureThumbnailAtCurrentTime}
-                  className="px-3 py-2 text-xs font-medium bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors"
+                  className="px-3 py-2 text-xs font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-md transition-colors"
                 >
                   Använd denna frame
                 </button>
@@ -470,8 +479,8 @@ export default function UploadForm() {
               onChange={(e) =>
                 setForm({ ...form, title: e.target.value, song_title: e.target.value })
               }
-              placeholder="t.ex. First Girl On The Moon"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+              placeholder="t.ex. The Power Of Now"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
           </div>
           <div>
@@ -480,8 +489,8 @@ export default function UploadForm() {
               type="text"
               value={form.dancer_names}
               onChange={(e) => setForm({ ...form, dancer_names: e.target.value })}
-              placeholder="t.ex. Peppfinity, Staben, Sex on the beach"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+              placeholder="t.ex Show De La Pepp, K-pHøs"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
           </div>
           <div className="grid grid-cols-3 gap-3 sm:col-span-2">
@@ -492,7 +501,7 @@ export default function UploadForm() {
                 onChange={(e) =>
                   setForm({ ...form, section: e.target.value as Section })
                 }
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               >
                 {SECTIONS.map((s) => (
                   <option key={s} value={s}>
@@ -508,7 +517,7 @@ export default function UploadForm() {
                 onChange={(e) =>
                   setForm({ ...form, organization: e.target.value as DanceOrganization })
                 }
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               >
                 {ORGANIZATIONS.map((organization) => (
                   <option key={organization} value={organization}>
@@ -523,9 +532,9 @@ export default function UploadForm() {
                 type="text"
                 value={form.year}
                 onChange={(e) => setForm({ ...form, year: e.target.value })}
-                placeholder="t.ex. 23"
-                maxLength={4}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                placeholder="t.ex. 26"
+                inputMode="numeric"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               />
             </div>
           </div>
@@ -536,7 +545,7 @@ export default function UploadForm() {
               value={form.artist}
               onChange={(e) => setForm({ ...form, artist: e.target.value })}
               placeholder="t.ex. Klaas, R3HAB"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
           </div>
           <div className="sm:col-span-2">
@@ -546,7 +555,7 @@ export default function UploadForm() {
               value={form.spotify_url}
               onChange={(e) => setForm({ ...form, spotify_url: e.target.value })}
               placeholder="https://open.spotify.com/track/..."
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
           </div>
         </div>
@@ -582,7 +591,7 @@ export default function UploadForm() {
             </div>
             <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
               <div
-                className="h-full bg-purple-500 transition-all duration-300"
+                className="h-full bg-brand-500 transition-all duration-300"
                 style={{ width: `${compressionPct}%` }}
               />
             </div>
@@ -592,7 +601,7 @@ export default function UploadForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white font-medium py-3 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
+          className="w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-60 text-white font-medium py-3 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
         >
           {loading ? (
             <>
@@ -608,8 +617,7 @@ export default function UploadForm() {
           <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
             <p className="font-medium">Stanna kvar på sidan tills uppladdningen är klar.</p>
             <p className="mt-1">
-              Om du byter sida, stänger fliken eller laddar om sidan avbryts komprimeringen eller
-              uppladdningen.
+              Om du byter sida, stänger fliken eller laddar om sidan avbryts uppladdningen.
             </p>
           </div>
         )}

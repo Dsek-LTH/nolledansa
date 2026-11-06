@@ -40,7 +40,7 @@ export default function SegmentSelector({
       <div className="flex items-center gap-3">
         <button
           onClick={allSelected ? handleDeselectAll : handleSelectAll}
-          className="text-xs text-purple-600 hover:text-purple-800 underline"
+          className="text-xs text-brand-600 hover:text-brand-800 underline"
         >
           {allSelected ? "Avmarkera alla" : "Markera alla"}
         </button>
@@ -57,7 +57,7 @@ export default function SegmentSelector({
               key={seg.id}
               className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
                 checked
-                  ? "border-purple-400 bg-purple-50"
+                  ? "border-brand-400 bg-brand-50"
                   : "border-gray-200 bg-white hover:bg-gray-50"
               }`}
             >
@@ -65,7 +65,7 @@ export default function SegmentSelector({
                 type="checkbox"
                 checked={checked}
                 onChange={() => onToggle(seg.id)}
-                className="w-4 h-4 accent-purple-600"
+                className="w-4 h-4 accent-brand-600"
               />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900">{seg.name}</p>

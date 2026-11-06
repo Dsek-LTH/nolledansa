@@ -75,6 +75,7 @@ export async function searchApprovedDances(term: string) {
          title ilike $1 or
          section ilike $1 or
          year ilike $1 or
+         (section || right(year, 2)) ilike $1 or
          song_title ilike $1 or
          coalesce(dancer_names, '') ilike $1 or
          coalesce(artist, '') ilike $1
@@ -97,18 +98,23 @@ export async function getRandomApprovedDances(limit: number) {
   return rows.map(mapDance);
 }
 
-export async function getCurrentYearDances(limit: number) {
-  const now = new Date();
-  const fullYear = String(now.getFullYear());
-  const shortYear = fullYear.slice(-2);
-
+export async function getLatestYearDances() {
   const rows = await query<DanceRow>(
-    `select * from dances
-     where status = 'approved'
-       and year = any($1::text[])
-     order by created_at desc
-     limit $2`,
-    [[shortYear, fullYear], limit]
+    `with approved_dances as (
+       select dances.*,
+         case
+           when year ~ '^[0-9]{2}$' then 2000 + year::int
+           when year ~ '^[0-9]{4}$' then year::int
+         end as normalized_year
+       from dances
+       where status = 'approved'
+     )
+     select * from approved_dances
+     where normalized_year = (
+       select max(normalized_year) from approved_dances
+       where normalized_year >= 2000
+     )
+     order by created_at desc`
   );
   return rows.map(mapDance);
 }
@@ -117,7 +123,7 @@ export async function getApprovedDancesByFilters(filters: {
   sections: string[];
   years: string[];
   organizations: string[];
-  sort: "section" | "newest" | "oldest";
+  sort: "section" | "newest" | "oldest" | "popular";
 }) {
   const conditions = [`status = 'approved'`];
   const params: unknown[] = [];
@@ -140,10 +146,19 @@ export async function getApprovedDancesByFilters(filters: {
     orderBy = "section asc, year desc, created_at desc";
   } else if (filters.sort === "oldest") {
     orderBy = "year asc, section asc, created_at desc";
+  } else if (filters.sort === "popular") {
+    orderBy = "view_count desc, created_at desc, id asc";
   }
 
+  const selection = filters.sort === "popular"
+    ? `dances.*, (
+        select count(*)::int from dance_clicks
+        where dance_clicks.dance_id = dances.id
+      ) as view_count`
+    : "*";
+
   const rows = await query<DanceRow>(
-    `select * from dances
+    `select ${selection} from dances
      where ${conditions.join(" and ")}
      order by ${orderBy}`
     ,

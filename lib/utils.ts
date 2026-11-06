@@ -108,7 +108,7 @@ function isLightColor(hex: string) {
 
 export function getSectionTheme(section: string) {
   const normalized = normalizeSection(section);
-  const accent = SECTION_COLORS[normalized] ?? "#7C3AED";
+  const accent = SECTION_COLORS[normalized] ?? "#F280A1";
   const light = isLightColor(accent);
 
   return {

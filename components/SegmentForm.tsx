@@ -48,8 +48,9 @@ export default function SegmentForm({
     const newSeg = emptySegment();
     newSeg.sort_order = segments.length;
     if (last) {
-      // Pre-fill start time with previous segment's end time
+      // Pre-fill both times with the previous segment's end time
       newSeg.start_time_str = last.end_time_str;
+      newSeg.end_time_str = last.end_time_str;
     }
     onChange([...segments, newSeg]);
   };
@@ -140,7 +141,7 @@ export default function SegmentForm({
                 value={seg.name}
                 onChange={(e) => update(i, "name", e.target.value)}
                 placeholder="t.ex. Intro, Refräng, Vers 1"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               />
             </div>
             <div>
@@ -150,7 +151,7 @@ export default function SegmentForm({
                 value={seg.description}
                 onChange={(e) => update(i, "description", e.target.value)}
                 placeholder="Valfri beskrivning"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               />
             </div>
             <div>
@@ -160,7 +161,7 @@ export default function SegmentForm({
                 value={seg.start_time_str}
                 onChange={(e) => update(i, "start_time_str", e.target.value)}
                 placeholder="0:00"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               />
             </div>
             <div>
@@ -170,7 +171,7 @@ export default function SegmentForm({
                 value={seg.end_time_str}
                 onChange={(e) => update(i, "end_time_str", e.target.value)}
                 placeholder="0:30"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               />
             </div>
           </div>
@@ -184,7 +185,7 @@ export default function SegmentForm({
       <button
         type="button"
         onClick={add}
-        className="flex items-center gap-2 text-sm text-purple-600 hover:text-purple-800 border border-dashed border-purple-300 hover:border-purple-500 px-4 py-2 rounded-lg w-full justify-center transition-colors"
+        className="flex items-center gap-2 text-sm text-brand-600 hover:text-brand-800 border border-dashed border-brand-300 hover:border-brand-500 px-4 py-2 rounded-lg w-full justify-center transition-colors"
       >
         <Plus className="w-4 h-4" />
         Lägg till del

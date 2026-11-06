@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { Dance, TrendingDance } from "@/lib/types";
 import {
-  getCurrentYearDances as getCurrentYearDancesFromStore,
+  getLatestYearDances as getLatestYearDancesFromStore,
   getRandomApprovedDances,
   getTrendingDances as getTrendingDancesFromStore,
   searchApprovedDances,
@@ -30,8 +30,8 @@ async function getRandomDances(): Promise<Dance[]> {
   return getRandomApprovedDances(12);
 }
 
-async function getCurrentYearDances(): Promise<Dance[]> {
-  return getCurrentYearDancesFromStore(12);
+async function getLatestYearDances(): Promise<Dance[]> {
+  return getLatestYearDancesFromStore();
 }
 
 export default async function HomePage({ searchParams }: HomeProps) {
@@ -40,7 +40,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
 
   const [trending, yearlyDances, dances] = await Promise.all([
     getTrendingDances(),
-    query ? Promise.resolve([] as Dance[]) : getCurrentYearDances(),
+    query ? Promise.resolve([] as Dance[]) : getLatestYearDances(),
     query ? searchDances(query) : getRandomDances(),
   ]);
 
@@ -49,7 +49,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
       {/* Hero */}
       <section className="text-center space-y-4 py-8">
         <div className="flex items-center justify-center gap-3">
-          <Music2 className="w-10 h-10 text-purple-600" />
+          <Music2 className="w-10 h-10 text-brand-600" />
           <h1 className="text-4xl font-bold text-gray-900">NolleDansa</h1>
         </div>
         <p className="text-gray-500 text-lg max-w-xl mx-auto">
@@ -71,7 +71,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
             {yearlyDances.length === 0 ? (
               <div className="text-center py-12 text-gray-400 bg-white border border-gray-200 rounded-xl">
                 <Music2 className="w-10 h-10 mx-auto mb-3 opacity-50" />
-                <p>Inga godkända danser för innevarande år ännu.</p>
+                <p>Inga godkända danser ännu.</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -99,7 +99,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
                 <div className="flex justify-center">
                   <Link
                     href="/danser"
-                    className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+                    className="bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
                   >
                     Visa alla danser
                   </Link>

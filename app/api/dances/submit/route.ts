@@ -1,22 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { createDanceWithSegments } from "@/lib/store";
+import { DANCE_YEAR_ERROR, normalizeDanceYear } from "@/lib/dance-year";
 
 export async function POST(request: NextRequest) {
   try {
     const payload = await request.json();
-    const session = await auth();
 
     if (!payload?.danceId || !payload?.title || !payload?.section || !payload?.year || !payload?.videoUrl) {
       return NextResponse.json({ error: "Ogiltig payload." }, { status: 400 });
     }
+
+    const year = normalizeDanceYear(payload.year);
+    if (year === null) {
+      return NextResponse.json({ error: DANCE_YEAR_ERROR }, { status: 400 });
+    }
+
+    const session = await auth();
 
     await createDanceWithSegments({
       danceId: payload.danceId,
       title: payload.title,
       section: payload.section,
       organization: payload.organization ?? "Nollningen",
-      year: payload.year,
+      year,
       songTitle: payload.songTitle ?? payload.title,
       dancerNames: payload.dancerNames ?? "",
       artist: payload.artist ?? null,

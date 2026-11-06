@@ -40,7 +40,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
       <div className="flex items-center gap-2">
-        <ShieldCheck className="w-6 h-6 text-purple-600" />
+        <ShieldCheck className="w-6 h-6 text-brand-600" />
         <h1 className="text-2xl font-bold text-gray-900">Admin-panel</h1>
       </div>
 
@@ -49,7 +49,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           href="/admin"
           className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === "pending"
-              ? "border-purple-600 text-purple-700"
+              ? "border-brand-600 text-brand-700"
               : "border-transparent text-gray-500 hover:text-gray-800"
           }`}
         >
@@ -60,7 +60,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           href="/admin?tab=hidden"
           className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === "hidden"
-              ? "border-purple-600 text-purple-700"
+              ? "border-brand-600 text-brand-700"
               : "border-transparent text-gray-500 hover:text-gray-800"
           }`}
         >
@@ -138,7 +138,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                   <Link
                     key={dance.id}
                     href={`/admin/${dance.id}`}
-                    className="flex items-center justify-between gap-4 bg-white border border-gray-200 rounded-xl px-5 py-4 hover:border-purple-300 hover:shadow-sm transition-all"
+                    className="flex items-center justify-between gap-4 bg-white border border-gray-200 rounded-xl px-5 py-4 hover:border-brand-300 hover:shadow-sm transition-all"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <Music className="w-5 h-5 text-gray-400 shrink-0" />
@@ -185,7 +185,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     <Link
                       key={request.id}
                       href={`/admin/edits/${request.id}`}
-                      className="flex items-center justify-between gap-4 bg-white border border-gray-200 rounded-xl px-5 py-4 hover:border-purple-300 hover:shadow-sm transition-all"
+                      className="flex items-center justify-between gap-4 bg-white border border-gray-200 rounded-xl px-5 py-4 hover:border-brand-300 hover:shadow-sm transition-all"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <RequestIcon className="w-5 h-5 text-gray-400 shrink-0" />

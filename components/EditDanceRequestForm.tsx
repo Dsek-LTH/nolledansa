@@ -12,6 +12,7 @@ import {
 } from "@/lib/types";
 import { parseTime } from "@/lib/utils";
 import { compressVideo, CompressionProgress } from "@/lib/compress-video";
+import { VIDEO_COMPRESSION_ENABLED } from "@/lib/upload-config";
 
 const SORTED_SECTIONS: Section[] = ["A", "D", "E", "F", "I", "ING", "K", "M", "V", "W"];
 const ORGANIZATIONS: DanceOrganization[] = ["Nollningen", "Sexmästeriet", "Phusk"];
@@ -326,24 +327,26 @@ export default function EditDanceRequestForm({ dance, segments }: EditDanceReque
           }
         };
 
-        try {
-          fileToUpload = await compressVideo(
-            videoFile,
-            handleCompressionProgress,
-            LIGHT_COMPRESSION_THRESHOLD_MB
-          );
-        } catch (compressionErr) {
-          console.warn("Komprimering misslyckades:", compressionErr);
-          throw new Error(
-            "Komprimeringen misslyckades. Prova igen eller exportera videon med lägre bitrate/upplösning."
-          );
-        }
+        if (VIDEO_COMPRESSION_ENABLED) {
+          try {
+            fileToUpload = await compressVideo(
+              videoFile,
+              handleCompressionProgress,
+              LIGHT_COMPRESSION_THRESHOLD_MB
+            );
+          } catch (compressionErr) {
+            console.warn("Komprimering misslyckades:", compressionErr);
+            throw new Error(
+              "Komprimeringen misslyckades. Prova igen eller exportera videon med lägre bitrate/upplösning."
+            );
+          }
 
-        const finalMB = fileToUpload.size / 1024 / 1024;
-        if (finalMB > MAX_UPLOAD_MB) {
-          throw new Error(
-            `Filen är ${finalMB.toFixed(0)} MB efter komprimering, vilket överstiger gränsen på ${MAX_UPLOAD_MB} MB. Försök med en kortare video.`
-          );
+          const finalMB = fileToUpload.size / 1024 / 1024;
+          if (finalMB > MAX_UPLOAD_MB) {
+            throw new Error(
+              `Filen är ${finalMB.toFixed(0)} MB efter komprimering, vilket överstiger gränsen på ${MAX_UPLOAD_MB} MB. Försök med en kortare video.`
+            );
+          }
         }
 
         setStatusMsg("Laddar upp video…");
@@ -539,7 +542,7 @@ export default function EditDanceRequestForm({ dance, segments }: EditDanceReque
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className="inline-flex items-center gap-2 bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+          className="inline-flex items-center gap-2 bg-brand-100 hover:bg-brand-200 text-brand-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
         >
           <PencilLine className="w-4 h-4" />
           {open ? "Stäng" : "Redigera dans"}
@@ -581,7 +584,7 @@ export default function EditDanceRequestForm({ dance, segments }: EditDanceReque
                     setForm({ ...form, title: e.target.value, song_title: e.target.value })
                   }
                   placeholder="t.ex. D-sektionens nolledans 2023"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                 />
               </div>
               <div>
@@ -591,7 +594,7 @@ export default function EditDanceRequestForm({ dance, segments }: EditDanceReque
                   value={form.dancer_names}
                   onChange={(e) => setForm({ ...form, dancer_names: e.target.value })}
                   placeholder="t.ex. Nollor, Phaddrar, Sexmästeriet"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:col-span-2">
@@ -600,7 +603,7 @@ export default function EditDanceRequestForm({ dance, segments }: EditDanceReque
                   <select
                     value={form.section}
                     onChange={(e) => setForm({ ...form, section: e.target.value as Section })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                   >
                     {SORTED_SECTIONS.map((section) => (
                       <option key={section} value={section}>
@@ -616,7 +619,7 @@ export default function EditDanceRequestForm({ dance, segments }: EditDanceReque
                     onChange={(e) =>
                       setForm({ ...form, organization: e.target.value as DanceOrganization })
                     }
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                   >
                     {ORGANIZATIONS.map((organization) => (
                       <option key={organization} value={organization}>
@@ -633,7 +636,7 @@ export default function EditDanceRequestForm({ dance, segments }: EditDanceReque
                     onChange={(e) => setForm({ ...form, year: e.target.value })}
                     placeholder="t.ex. 23"
                     maxLength={4}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                   />
                 </div>
               </div>
@@ -644,7 +647,7 @@ export default function EditDanceRequestForm({ dance, segments }: EditDanceReque
                   value={form.artist}
                   onChange={(e) => setForm({ ...form, artist: e.target.value })}
                   placeholder="t.ex. The Weeknd"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                 />
               </div>
               <div className="sm:col-span-2">
@@ -654,7 +657,7 @@ export default function EditDanceRequestForm({ dance, segments }: EditDanceReque
                   value={form.spotify_url}
                   onChange={(e) => setForm({ ...form, spotify_url: e.target.value })}
                   placeholder="https://open.spotify.com/track/..."
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                 />
               </div>
             </div>
@@ -703,8 +706,8 @@ export default function EditDanceRequestForm({ dance, segments }: EditDanceReque
                         : "cursor-pointer"
                     } ${
                       videoFile
-                        ? "border-purple-400 bg-purple-50"
-                        : "border-gray-300 hover:border-purple-400 bg-white"
+                        ? "border-brand-400 bg-brand-50"
+                        : "border-gray-300 hover:border-brand-400 bg-white"
                     }`}
                   >
                     <input
@@ -717,7 +720,7 @@ export default function EditDanceRequestForm({ dance, segments }: EditDanceReque
                     />
                     {videoFile ? (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-purple-700">{videoFile.name}</p>
+                        <p className="text-sm font-medium text-brand-700">{videoFile.name}</p>
                         <p className="text-xs text-gray-500">
                           {(videoFile.size / 1024 / 1024).toFixed(1)} MB
                           {videoDuration !== undefined &&
@@ -803,7 +806,7 @@ export default function EditDanceRequestForm({ dance, segments }: EditDanceReque
                     <button
                       type="button"
                       onClick={useCurrentFrameAsThumbnail}
-                      className="px-3 py-2 text-xs font-medium bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors"
+                      className="px-3 py-2 text-xs font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-md transition-colors"
                     >
                       Använd denna frame
                     </button>
@@ -843,7 +846,7 @@ export default function EditDanceRequestForm({ dance, segments }: EditDanceReque
               onChange={(e) => setRequesterNote(e.target.value)}
               rows={3}
               placeholder="Beskriv gärna vad som borde ändras och varför."
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
           </section>
 
@@ -861,7 +864,7 @@ export default function EditDanceRequestForm({ dance, segments }: EditDanceReque
               </div>
               <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-purple-500 transition-all duration-300"
+                  className="h-full bg-brand-500 transition-all duration-300"
                   style={{ width: `${compressionPct}%` }}
                 />
               </div>
@@ -871,7 +874,7 @@ export default function EditDanceRequestForm({ dance, segments }: EditDanceReque
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white font-medium py-3 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-60 text-white font-medium py-3 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
           >
             {loading ? (
               <>

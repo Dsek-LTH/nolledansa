@@ -173,7 +173,7 @@ export default function VideoPlayer({ videoUrl, selectedSegments }: VideoPlayerP
         {/* Progress bar */}
         <div className="w-full h-1.5 bg-gray-700 rounded-full overflow-hidden">
           <div
-            className="h-full bg-purple-500 transition-all"
+            className="h-full bg-brand-500 transition-all"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -183,7 +183,7 @@ export default function VideoPlayer({ videoUrl, selectedSegments }: VideoPlayerP
             <button
               type="button"
               onClick={handlePlayPause}
-              className="text-white hover:text-purple-400 transition-colors"
+              className="text-white hover:text-brand-400 transition-colors"
               title={isPlaying ? "Pausa" : "Spela"}
             >
               {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
@@ -234,7 +234,7 @@ export default function VideoPlayer({ videoUrl, selectedSegments }: VideoPlayerP
                 step="0.01"
                 value={isMuted ? 0 : volume}
                 onChange={(e) => handleVolumeChange(Number(e.target.value))}
-                className="w-24 accent-purple-500"
+                className="w-24 accent-brand-500"
                 aria-label="Volym"
               />
             </div>
@@ -252,7 +252,7 @@ export default function VideoPlayer({ videoUrl, selectedSegments }: VideoPlayerP
 
         <div className="flex items-center justify-between gap-3">
           {currentSegment ? (
-            <span className="text-xs text-purple-400 font-medium">
+            <span className="text-xs text-brand-400 font-medium">
               {currentSegment.name}
               <span className="text-gray-500 ml-1">
                 ({formatTime(currentSegment.start_time)}–{formatTime(currentSegment.end_time)})

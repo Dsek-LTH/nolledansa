@@ -51,7 +51,7 @@ export default async function AdminDancePage({ params }: PageProps) {
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="bg-purple-100 text-purple-700 text-sm font-bold px-2.5 py-1 rounded-md">
+              <span className="bg-brand-100 text-brand-700 text-sm font-bold px-2.5 py-1 rounded-md">
                 {sectionLabel(dance.section, dance.year)}
               </span>
               <span

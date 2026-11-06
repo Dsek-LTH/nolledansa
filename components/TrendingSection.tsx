@@ -10,7 +10,7 @@ export default function TrendingSection({ dances }: TrendingSectionProps) {
   return (
     <section>
       <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 mb-4">
-        <TrendingUp className="w-5 h-5 text-purple-600" />
+        <TrendingUp className="w-5 h-5 text-brand-600" />
         Trendar just nu
         <span className="text-xs font-normal text-gray-400">(senaste 7 dagarna)</span>
       </h2>

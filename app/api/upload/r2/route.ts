@@ -4,8 +4,6 @@ import { createObjectKey, getStorageErrorMessage, uploadObject } from "@/lib/obj
 
 export const runtime = "nodejs";
 
-const MAX_UPLOAD_BYTES = 60 * 1024 * 1024;
-
 function isUploadKind(value: FormDataEntryValue | null): value is "video" | "thumbnail" {
   return value === "video" || value === "thumbnail";
 }
@@ -13,10 +11,6 @@ function isUploadKind(value: FormDataEntryValue | null): value is "video" | "thu
 function validateFile(kind: "video" | "thumbnail", file: File) {
   if (file.size <= 0) {
     return "Filen är tom.";
-  }
-
-  if (file.size > MAX_UPLOAD_BYTES) {
-    return "Filen är för stor för uppladdning.";
   }
 
   if (kind === "video" && !file.type.startsWith("video/")) {
