@@ -13,6 +13,9 @@ RUN /usr/libexec/s2i/assemble
 # Second stage copies the application to the minimal image
 FROM quay.io/sclorg/nodejs-22-minimal-c9s
 
+# Static binaries run without root and without additional system libraries.
+COPY --from=mwader/static-ffmpeg:7.1.1 /ffmpeg /ffprobe /usr/local/bin/
+
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copy the application source and build artifacts from the builder image to this one

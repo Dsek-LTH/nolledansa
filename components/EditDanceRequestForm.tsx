@@ -349,7 +349,7 @@ export default function EditDanceRequestForm({ dance, segments }: EditDanceReque
           }
         }
 
-        setStatusMsg("Laddar upp video…");
+        setStatusMsg("Laddar upp och förbereder video…");
         setCompressionPct(null);
         const uploadExt = fileToUpload.name.split(".").pop()?.toLowerCase() || "mp4";
         const videoUpload = await uploadFileToObjectStorage({
@@ -713,7 +713,7 @@ export default function EditDanceRequestForm({ dance, segments }: EditDanceReque
                     <input
                       ref={videoInputRef}
                       type="file"
-                      accept="video/*"
+                      accept="video/*,.mkv,.avi,.mov,.m4v,.mpg,.mpeg,.mts,.m2ts,.3gp,.ogv,.wmv"
                       className="hidden"
                       onChange={handleVideoChange}
                       disabled={loading}

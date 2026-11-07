@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { prepareVideo } from "@/lib/prepare-video";
 import { createObjectKey, getStorageErrorMessage, uploadObject } from "@/lib/object-storage";
 
 export const runtime = "nodejs";
@@ -13,7 +14,7 @@ function validateFile(kind: "video" | "thumbnail", file: File) {
     return "Filen är tom.";
   }
 
-  if (kind === "video" && !file.type.startsWith("video/")) {
+  if (kind === "video" && !file.type.startsWith("video/") && !/\.(mp4|mov|m4v|mkv|webm|avi|mpg|mpeg|mts|m2ts|3gp|ogv|wmv)$/i.test(file.name)) {
     return "Videofilen har fel filtyp.";
   }
 
@@ -46,9 +47,15 @@ export async function POST(request: Request) {
     const session = await auth();
     const userId = session?.user?.email ?? null;
 
+    const prepared = kind === "video" ? await prepareVideo(file) : {
+      body: Buffer.from(await file.arrayBuffer()),
+      filename: file.name,
+      contentType: file.type || "application/octet-stream",
+    };
+
     const key = createObjectKey({
       kind,
-      filename: file.name,
+      filename: prepared.filename,
       ownerId: userId,
       danceId: formData.get("danceId")?.toString() ?? null,
       requestId: formData.get("requestId")?.toString() ?? null,
@@ -56,8 +63,8 @@ export async function POST(request: Request) {
 
     const result = await uploadObject({
       key,
-      body: Buffer.from(await file.arrayBuffer()),
-      contentType: file.type || "application/octet-stream",
+      body: prepared.body,
+      contentType: prepared.contentType,
     });
 
     return NextResponse.json(result);

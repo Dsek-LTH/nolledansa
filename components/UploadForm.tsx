@@ -222,7 +222,7 @@ export default function UploadForm() {
       }
 
       // ── 2. Ladda upp video till objektlagring ─────────────────────────────
-      setStatusMsg("Laddar upp video…");
+      setStatusMsg("Laddar upp och förbereder video…");
       setCompressionPct(null);
 
       const uploadExt = fileToUpload.name.split(".").pop()?.toLowerCase() || "mp4";
@@ -352,7 +352,7 @@ export default function UploadForm() {
           <input
             ref={videoInputRef}
             type="file"
-            accept="video/*"
+            accept="video/*,.mkv,.avi,.mov,.m4v,.mpg,.mpeg,.mts,.m2ts,.3gp,.ogv,.wmv"
             className="hidden"
             onChange={handleVideoChange}
             disabled={loading}
@@ -370,7 +370,7 @@ export default function UploadForm() {
               <p className="text-xs text-gray-400">
                 {VIDEO_COMPRESSION_ENABLED
                   ? `Videon komprimeras före uppladdning till max ${MAX_UPLOAD_MB} MB.`
-                  : "Videon laddas upp i originalstorlek utan komprimering."}
+                  : "Kompatibla videor behålls utan omkodning. Övriga format konverteras automatiskt."}
               </p>
             </div>
           ) : (
@@ -380,7 +380,7 @@ export default function UploadForm() {
               <p className="text-xs text-gray-400">
                 {VIDEO_COMPRESSION_ENABLED
                   ? `MP4, MOV, WebM, etc. · Komprimeras automatiskt till max ${MAX_UPLOAD_MB} MB före uppladdning`
-                  : "MP4, MOV, WebM, etc. · Laddas upp utan komprimering"}
+                  : "MP4, MOV, WebM, med flera · Konverteras bara vid behov"}
               </p>
             </div>
           )}
