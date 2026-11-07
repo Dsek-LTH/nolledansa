@@ -32,9 +32,10 @@ async function uploadFileToObjectStorage(params: {
   if (params.danceId) formData.append("danceId", params.danceId);
   if (params.requestId) formData.append("requestId", params.requestId);
 
-  const response = await fetch("/api/upload/object", {
+  const response = await fetch(params.kind === "video" ? "/api/upload/video" : "/api/upload/object", {
     method: "POST",
-    body: formData,
+    ...(params.kind === "video" ? { headers: { "Content-Type": "application/octet-stream" } } : {}),
+    body: params.kind === "video" ? params.file : formData,
   });
 
   const data = (await response.json()) as { key?: string; url?: string; error?: string };

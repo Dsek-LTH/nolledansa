@@ -1,4 +1,7 @@
 import "server-only";
+import { createReadStream } from "node:fs";
+import { stat } from "node:fs/promises";
+import { Upload } from "@aws-sdk/lib-storage";
 
 import {
   GetObjectCommand,
@@ -124,4 +127,27 @@ export async function getObject(params: {
       Range: params.range ?? undefined,
     })
   );
+}
+
+/** Bound buffering to one 16 MiB part, even for multi-gigabyte files. */
+export async function uploadObjectFile(params: { key: string; path: string; contentType: string }) {
+  const body = createReadStream(params.path);
+  try {
+    const uploader = new Upload({
+      client: getS3Client(),
+      queueSize: 1,
+      partSize: 16 * 1024 * 1024,
+      leavePartsOnError: false,
+      params: {
+        Bucket: getBucketName(), Key: params.key, Body: body,
+        ContentLength: (await stat(params.path)).size,
+        ContentType: params.contentType,
+        CacheControl: "public, max-age=31536000, immutable",
+      },
+    });
+    await uploader.done();
+    return { key: params.key, url: getObjectUrl(params.key) };
+  } finally {
+    body.destroy();
+  }
 }

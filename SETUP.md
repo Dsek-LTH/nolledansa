@@ -11,19 +11,31 @@
 ### Videohantering
 
 Alla videouppladdningar kontrolleras med ffprobe på servern. MP4 med H.264,
-8-bitars yuv420p och AAC-LC (eller utan ljud) sparas oförändrade. Andra behållare
+8-bitars yuv420p/yuvj420p och AAC-LC (eller utan ljud) sparas oförändrade. Andra behållare
 packas om till MP4; kompatibla video- och ljudspår kopieras utan omkodning.
 Enbart inkompatibla spår kodas om (H.264 CRF 18 respektive AAC 192 kbit/s).
 Upplösning och bildfrekvens behålls; udda bildmått får en extra kantpixel vid omkodning.
+Vid omkodning över 1080p används `veryfast` och `zerolatency` för att begränsa
+kodarens bildköer och minnesbehov. Upplösning och CRF 18 behålls, men utdata kan
+bli större än med den vanliga `fast`-inställningen. Kompatibla videospår kopieras
+fortfarande utan omkodning, även i 4K. Budgetera separat för FFmpegs arbetsminne;
+strömmande uppladdning tar bort behovet att hålla hela filen i minnet.
 
 Bearbetningen sker inom uppladdningsanropet, innan videon sparas i objektlagringen.
+Formulären skickar video som en rå binärström till `/api/upload/video`.
+Servern skriver direkt till temporär disk utan att läsa videon som FormData eller
+en enda Buffer. Resultatet strömmas till S3 med multipart-uppladdning, en del på
+16 MiB åt gången. Detta stödjer filer över 2 GB utan att hela filen måste rymmas
+i processens minne. Den äldre FormData-routen finns kvar för äldre klienter och
+miniatyrbilder; stora videor ska använda den nya routen.
 Servern skickar JSON-whitespace var tionde sekund under bearbetningen för att hålla
 anslutningen aktiv genom proxyservrar. Efter att strömningen börjat returneras
 bearbetningsfel som `{ "error": "..." }` med HTTP 200; klienter måste kontrollera
 svarets `error`/`url`, inte enbart HTTP-status. Båda uppladdningsformulären gör det.
 Webbserver/reverse proxy måste tillåta stora request bodies och upp till 30 minuters
 bearbetning plus överföringstid. Servern behöver temporärt diskutrymme för original
-och resultat samt minne för den färdiga filen. Formuläret visar att videon förbereds;
+och resultat. S3-nyckeln måste även tillåta multipart-uppladdning och avbrott av
+misslyckade multipart-uppladdningar. Formuläret visar att videon förbereds;
 användaren behöver stanna kvar tills det är klart. Detta är ingen bakgrundskö.
 Tillfälliga filer rensas vid både lyckad och misslyckad bearbetning.
 Befintliga uppladdningar ändras inte; problematiska videor behöver laddas upp igen.
@@ -103,6 +115,12 @@ docker compose -f compose.local.yml exec app node tests/video-upload.integration
 
 Testerna kontrollerar H.264/AAC utan ändrade filbytes, HEVC-konvertering,
 ompackning av MKV, konvertering av inkompatibelt ljud och HTTP range-anrop.
+
+`tests/large-video-upload.integration.cjs` kan dessutom köras i testcontainern
+med en skrivskyddat monterad originalfil över 2 GiB och förväntningen `unchanged`
+eller `convert`. Testet strömmar filen utan stora Buffer-allokeringar, kontrollerar
+H.264/AAC och range-anrop och jämför SHA-256 för filer som ska behållas oförändrade.
+Testernas lagrade videoobjekt raderas efter kontrollen.
 
 ## 7. Admin
 Admin-login sker via Authentik på `/admin`.

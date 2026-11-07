@@ -1,7 +1,7 @@
 // Run inside the local app container: node tests/video-upload.integration.cjs
 const assert = require('node:assert/strict');
 const { execFileSync } = require('node:child_process');
-const { mkdtempSync, readFileSync, writeFileSync, appendFileSync, statSync, rmSync } = require('node:fs');
+const { mkdtempSync, readFileSync, writeFileSync, appendFileSync, statSync, rmSync, createReadStream } = require('node:fs');
 const { tmpdir } = require('node:os');
 const { join } = require('node:path');
 const { S3Client, DeleteObjectCommand } = require('@aws-sdk/client-s3');
@@ -43,10 +43,10 @@ const videoHash = path => ffmpeg(['-i', path, '-map', '0:v:0', '-c', 'copy', '-f
       appendFileSync(input, padding);
     }
     const original = readFileSync(input);
-    const form = new FormData();
-    form.set('kind', 'video');
-    form.set('file', new File([original], item.name, { type: 'video/mp4' }));
-    const response = await fetch(`${base}/api/upload/object`, { method: 'POST', body: form });
+    const response = await fetch(`${base}/api/upload/video`, {
+      method: 'POST', headers: { 'Content-Type': 'application/octet-stream' },
+      body: createReadStream(input), duplex: 'half',
+    });
     assert.equal(response.headers.get('x-accel-buffering'), 'no', 'Video processing must use a streaming response');
     const uploaded = await response.json();
     assert.equal(response.status, 200, JSON.stringify(uploaded));
@@ -67,14 +67,21 @@ const videoHash = path => ffmpeg(['-i', path, '-map', '0:v:0', '-c', 'copy', '-f
     assert.equal((await range.arrayBuffer()).byteLength, 100);
     console.log(`PASS ${item.name}: upload, playback download, codecs, preservation and range requests`);
   }
-  const invalid = new FormData();
-  invalid.set('kind', 'video');
-  invalid.set('file', new File(['invalid video'], 'invalid.mp4', { type: 'video/mp4' }));
-  const response = await fetch(`${base}/api/upload/object`, { method: 'POST', body: invalid });
+  const response = await fetch(`${base}/api/upload/video`, {
+    method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: 'invalid video',
+  });
   const failed = await response.json();
   assert.equal(typeof failed.error, 'string', 'Processing failure must be valid JSON, not a dropped connection');
   assert.equal(failed.url, undefined);
   console.log('PASS invalid.mp4: processing error returned without breaking the connection');
+  const legacyForm = new FormData();
+  legacyForm.set('kind', 'video');
+  legacyForm.set('file', new File([readFileSync(join(directory, 'compatible.mp4'))], 'legacy.mp4', { type: 'video/mp4' }));
+  const legacy = await fetch(`${base}/api/upload/object`, { method: 'POST', body: legacyForm });
+  const legacyResult = await legacy.json();
+  assert.ok(legacyResult.url, JSON.stringify(legacyResult));
+  keys.push(legacyResult.key);
+  console.log('PASS legacy multipart upload');
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(async () => {
   for (const Key of keys) await client.send(new DeleteObjectCommand({ Bucket: process.env.S3_BUCKET_NAME, Key }));
   rmSync(directory, { recursive: true, force: true });

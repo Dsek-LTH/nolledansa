@@ -16,6 +16,7 @@ const info = (streams, format = { format_name: 'mov,mp4,m4a,3gp,3g2,mj2' }) => (
 test('compatible MP4 stays unchanged, also without audio', () => {
   assert.equal(videoPlan(info([video, audio])).unchanged, true);
   assert.equal(videoPlan(info([video])).unchanged, true);
+  assert.equal(videoPlan(info([{ ...video, pix_fmt: 'yuvj420p' }, audio])).unchanged, true);
 });
 test('HEVC and 10-bit H.264 require video encoding, preserving AAC', () => {
   for (const stream of [{ ...video, codec_name: 'hevc' }, { ...video, pix_fmt: 'yuv420p10le' }]) {

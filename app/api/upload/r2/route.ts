@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { prepareVideo } from "@/lib/prepare-video";
+import { withPreparedVideo } from "@/lib/prepare-video";
 import { jsonProcessingResponse } from "@/lib/json-processing-response";
-import { createObjectKey, getStorageErrorMessage, uploadObject } from "@/lib/object-storage";
+import { createObjectKey, getStorageErrorMessage, uploadObject, uploadObjectFile } from "@/lib/object-storage";
 
 export const runtime = "nodejs";
 
@@ -49,7 +49,14 @@ export async function POST(request: Request) {
     const userId = session?.user?.email ?? null;
 
     const processUpload = async () => {
-      const prepared = kind === "video" ? await prepareVideo(file) : {
+      if (kind === "video") {
+        return withPreparedVideo(file.stream(), path => uploadObjectFile({
+          key: createObjectKey({ kind: "video", filename: "video.mp4", ownerId: userId }),
+          path,
+          contentType: "video/mp4",
+        }), request.signal);
+      }
+      const prepared = {
         body: Buffer.from(await file.arrayBuffer()),
         filename: file.name,
         contentType: file.type || "application/octet-stream",
