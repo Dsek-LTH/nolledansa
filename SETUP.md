@@ -17,6 +17,10 @@ Enbart inkompatibla spår kodas om (H.264 CRF 18 respektive AAC 192 kbit/s).
 Upplösning och bildfrekvens behålls; udda bildmått får en extra kantpixel vid omkodning.
 
 Bearbetningen sker inom uppladdningsanropet, innan videon sparas i objektlagringen.
+Servern skickar JSON-whitespace var tionde sekund under bearbetningen för att hålla
+anslutningen aktiv genom proxyservrar. Efter att strömningen börjat returneras
+bearbetningsfel som `{ "error": "..." }` med HTTP 200; klienter måste kontrollera
+svarets `error`/`url`, inte enbart HTTP-status. Båda uppladdningsformulären gör det.
 Webbserver/reverse proxy måste tillåta stora request bodies och upp till 30 minuters
 bearbetning plus överföringstid. Servern behöver temporärt diskutrymme för original
 och resultat samt minne för den färdiga filen. Formuläret visar att videon förbereds;
@@ -72,6 +76,33 @@ npm run dev
 ```
 
 Öppna `http://localhost:3000`.
+
+### Lokal testserver med Docker Desktop
+
+```bash
+docker compose -f compose.local.yml up -d --build
+```
+
+Öppna `http://localhost:3000/upload`. Miljön bygger projektets Containerfile med
+FFmpeg och använder en separat lokal PostgreSQL-databas och S3-bucket i RustFS.
+Inga produktionsuppgifter från `.env.local` används. Testdata sparas i Docker-volymer.
+Authentik-inloggning är inte konfigurerad här; vanliga uppladdningar kan testas utan inloggning.
+
+Loggar och stopp:
+
+```bash
+docker compose -f compose.local.yml logs -f app
+docker compose -f compose.local.yml stop
+```
+
+Automatiska uppladdningstester med små genererade provvideor (enbart lokal miljö):
+
+```bash
+docker compose -f compose.local.yml exec app node tests/video-upload.integration.cjs
+```
+
+Testerna kontrollerar H.264/AAC utan ändrade filbytes, HEVC-konvertering,
+ompackning av MKV, konvertering av inkompatibelt ljud och HTTP range-anrop.
 
 ## 7. Admin
 Admin-login sker via Authentik på `/admin`.

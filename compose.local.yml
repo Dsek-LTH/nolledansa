@@ -1,0 +1,58 @@
+name: nolledansa-test
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    command: ["/bin/sh", "-c", "node scripts/init-local-storage.cjs && npm start"]
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://nolledansa:local-test-password@db:5432/nolledansa
+      AUTH_SECRET: local-test-only-secret-do-not-use-in-production
+      AUTH_URL: http://localhost:3000
+      AUTH_TRUST_HOST: "true"
+      S3_ENDPOINT: http://storage:9000
+      S3_REGION: us-east-1
+      S3_BUCKET_NAME: dance-videos
+      S3_ACCESS_KEY_ID: nolledansa-local
+      S3_SECRET_ACCESS_KEY: local-storage-password
+      S3_FORCE_PATH_STYLE: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+      storage:
+        condition: service_started
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: nolledansa
+      POSTGRES_PASSWORD: local-test-password
+      POSTGRES_DB: nolledansa
+    volumes:
+      - database:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nolledansa -d nolledansa"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  storage:
+    image: rustfs/rustfs:latest
+    environment:
+      RUSTFS_ACCESS_KEY: nolledansa-local
+      RUSTFS_SECRET_KEY: local-storage-password
+      RUSTFS_VOLUMES: /data
+      RUSTFS_CONSOLE_ENABLE: "true"
+    ports:
+      - "127.0.0.1:9001:9001"
+    volumes:
+      - videos:/data
+
+volumes:
+  database:
+  videos:

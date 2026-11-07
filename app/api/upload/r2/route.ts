@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prepareVideo } from "@/lib/prepare-video";
+import { jsonProcessingResponse } from "@/lib/json-processing-response";
 import { createObjectKey, getStorageErrorMessage, uploadObject } from "@/lib/object-storage";
 
 export const runtime = "nodejs";
@@ -47,27 +48,37 @@ export async function POST(request: Request) {
     const session = await auth();
     const userId = session?.user?.email ?? null;
 
-    const prepared = kind === "video" ? await prepareVideo(file) : {
-      body: Buffer.from(await file.arrayBuffer()),
-      filename: file.name,
-      contentType: file.type || "application/octet-stream",
+    const processUpload = async () => {
+      const prepared = kind === "video" ? await prepareVideo(file) : {
+        body: Buffer.from(await file.arrayBuffer()),
+        filename: file.name,
+        contentType: file.type || "application/octet-stream",
+      };
+
+      const key = createObjectKey({
+        kind,
+        filename: prepared.filename,
+        ownerId: userId,
+        danceId: formData.get("danceId")?.toString() ?? null,
+        requestId: formData.get("requestId")?.toString() ?? null,
+      });
+
+      const result = await uploadObject({
+        key,
+        body: prepared.body,
+        contentType: prepared.contentType,
+      });
+
+      return result;
     };
 
-    const key = createObjectKey({
-      kind,
-      filename: prepared.filename,
-      ownerId: userId,
-      danceId: formData.get("danceId")?.toString() ?? null,
-      requestId: formData.get("requestId")?.toString() ?? null,
-    });
-
-    const result = await uploadObject({
-      key,
-      body: prepared.body,
-      contentType: prepared.contentType,
-    });
-
-    return NextResponse.json(result);
+    if (kind === "video") {
+      return jsonProcessingResponse(processUpload, (error) => {
+        console.error("[Video upload] failed:", error);
+        return getStorageErrorMessage(error);
+      });
+    }
+    return NextResponse.json(await processUpload());
   } catch (error) {
     console.error("[Object upload] failed:", error);
     return NextResponse.json({ error: getStorageErrorMessage(error) }, { status: 500 });

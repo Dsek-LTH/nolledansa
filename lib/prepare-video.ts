@@ -34,7 +34,7 @@ export async function prepareVideo(file: File) {
 
     await run(process.env.FFMPEG_PATH || "ffmpeg", [
       "-hide_banner", "-loglevel", "error", "-nostdin", "-y",
-      "-protocol_whitelist", "file,pipe", "-i", input,
+      "-protocol_whitelist", "file,pipe", "-threads", "2", "-i", input,
       "-map", `0:${plan.video.index}`,
       ...(plan.audio ? ["-map", `0:${plan.audio.index}`] : []),
       "-c:v", plan.copyVideo ? "copy" : "libx264",
@@ -51,6 +51,9 @@ export async function prepareVideo(file: File) {
     return { body: await readFile(output), filename: "video.mp4", contentType: "video/mp4" };
   } catch (error) {
     console.error("[Video preparation] failed:", error);
+    if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") {
+      throw new Error("Serverns videokonvertering är inte tillgänglig. Kontakta administratören så att serverinstallationen kan kontrolleras.");
+    }
     throw new Error("Videon kunde inte förberedas. Filen kan vara skadad eller ha ett format som inte stöds. Försök med MP4 (H.264 och AAC), eller kontakta administratören.");
   } finally {
     await rm(directory, { recursive: true, force: true });
